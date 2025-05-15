@@ -1,0 +1,232 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "EC Business and Consumer Surveys",
+    "section": "",
+    "text": "Introduction\nThis is a collection of graphs that are based on the monthly EU business and consumer surveys.\nAll data is from https://economy-finance.ec.europa.eu/economic-forecast-and-surveys/business-and-consumer-surveys/download-business-and-consumer-survey-data/time-series_en",
+    "crumbs": [
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "01-main-indicators.html",
+    "href": "01-main-indicators.html",
+    "title": "1  Main indicators",
+    "section": "",
+    "text": "1.1 Sectoral confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Main indicators</span>"
+    ]
+  },
+  {
+    "objectID": "01-main-indicators.html#economic-sentiment-and-employment-expectations",
+    "href": "01-main-indicators.html#economic-sentiment-and-employment-expectations",
+    "title": "1  Main indicators",
+    "section": "1.2 Economic sentiment and employment expectations",
+    "text": "1.2 Economic sentiment and employment expectations",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Main indicators</span>"
+    ]
+  },
+  {
+    "objectID": "02-uncertainty-indicators.html",
+    "href": "02-uncertainty-indicators.html",
+    "title": "2  Uncertainty indicators",
+    "section": "",
+    "text": "2.1 Aggregate",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Uncertainty indicators</span>"
+    ]
+  },
+  {
+    "objectID": "03-labour-hoarding.html",
+    "href": "03-labour-hoarding.html",
+    "title": "3  Labour hoarding",
+    "section": "",
+    "text": "3.1 Aggregate",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Labour hoarding</span>"
+    ]
+  },
+  {
+    "objectID": "04-industry.html",
+    "href": "04-industry.html",
+    "title": "4  Industry",
+    "section": "",
+    "text": "4.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Industry</span>"
+    ]
+  },
+  {
+    "objectID": "04-industry.html#factors-limiting-the-production",
+    "href": "04-industry.html#factors-limiting-the-production",
+    "title": "4  Industry",
+    "section": "4.2 Factors limiting the production",
+    "text": "4.2 Factors limiting the production",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Industry</span>"
+    ]
+  },
+  {
+    "objectID": "04-industry.html#assessment-of-current-production-capacity",
+    "href": "04-industry.html#assessment-of-current-production-capacity",
+    "title": "4  Industry",
+    "section": "4.3 Assessment of current production capacity",
+    "text": "4.3 Assessment of current production capacity",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Industry</span>"
+    ]
+  },
+  {
+    "objectID": "04-industry.html#new-orders-in-recent-months",
+    "href": "04-industry.html#new-orders-in-recent-months",
+    "title": "4  Industry",
+    "section": "4.4 New orders in recent months",
+    "text": "4.4 New orders in recent months",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Industry</span>"
+    ]
+  },
+  {
+    "objectID": "04-industry.html#current-level-of-capacity-utilization",
+    "href": "04-industry.html#current-level-of-capacity-utilization",
+    "title": "4  Industry",
+    "section": "4.5 Current level of capacity utilization",
+    "text": "4.5 Current level of capacity utilization",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Industry</span>"
+    ]
+  },
+  {
+    "objectID": "04-industry.html#competitive-position",
+    "href": "04-industry.html#competitive-position",
+    "title": "4  Industry",
+    "section": "4.6 Competitive position",
+    "text": "4.6 Competitive position",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Industry</span>"
+    ]
+  },
+  {
+    "objectID": "04-01-industry-subsectors.html",
+    "href": "04-01-industry-subsectors.html",
+    "title": "5  Industry - Subsectors",
+    "section": "",
+    "text": "5.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Industry - Subsectors</span>"
+    ]
+  },
+  {
+    "objectID": "05-services.html",
+    "href": "05-services.html",
+    "title": "6  Services",
+    "section": "",
+    "text": "6.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Services</span>"
+    ]
+  },
+  {
+    "objectID": "05-services.html#factors-limiting-the-production",
+    "href": "05-services.html#factors-limiting-the-production",
+    "title": "6  Services",
+    "section": "6.2 Factors limiting the production",
+    "text": "6.2 Factors limiting the production",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Services</span>"
+    ]
+  },
+  {
+    "objectID": "05-services.html#current-level-of-capacity-utilization",
+    "href": "05-services.html#current-level-of-capacity-utilization",
+    "title": "6  Services",
+    "section": "6.3 Current level of capacity utilization",
+    "text": "6.3 Current level of capacity utilization",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Services</span>"
+    ]
+  },
+  {
+    "objectID": "05-01-services-subsectors.html",
+    "href": "05-01-services-subsectors.html",
+    "title": "7  Services - Subsectors",
+    "section": "",
+    "text": "7.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Services - Subsectors</span>"
+    ]
+  },
+  {
+    "objectID": "05-01-services-subsectors.html#factors-limiting-the-business",
+    "href": "05-01-services-subsectors.html#factors-limiting-the-business",
+    "title": "7  Services - Subsectors",
+    "section": "7.2 Factors limiting the business",
+    "text": "7.2 Factors limiting the business",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Services - Subsectors</span>"
+    ]
+  },
+  {
+    "objectID": "05-01-services-subsectors.html#current-level-of-capacity-utilization",
+    "href": "05-01-services-subsectors.html#current-level-of-capacity-utilization",
+    "title": "7  Services - Subsectors",
+    "section": "7.3 Current level of capacity utilization",
+    "text": "7.3 Current level of capacity utilization",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Services - Subsectors</span>"
+    ]
+  },
+  {
+    "objectID": "07-retail.html",
+    "href": "07-retail.html",
+    "title": "9  Retail",
+    "section": "",
+    "text": "9.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Retail</span>"
+    ]
+  },
+  {
+    "objectID": "08-00-building.html",
+    "href": "08-00-building.html",
+    "title": "10  Construction",
+    "section": "",
+    "text": "10.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Construction</span>"
+    ]
+  },
+  {
+    "objectID": "08-00-building.html#main-factors-limiting-building-activity",
+    "href": "08-00-building.html#main-factors-limiting-building-activity",
+    "title": "10  Construction",
+    "section": "10.2 Main factors limiting building activity",
+    "text": "10.2 Main factors limiting building activity",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Construction</span>"
+    ]
+  },
+  {
+    "objectID": "08-01-building-subsectors.html",
+    "href": "08-01-building-subsectors.html",
+    "title": "11  Construction - Subsectors",
+    "section": "",
+    "text": "11.1 Confidence indicators",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Construction - Subsectors</span>"
+    ]
+  },
+  {
+    "objectID": "08-01-building-subsectors.html#main-factors-limiting-building-activity",
+    "href": "08-01-building-subsectors.html#main-factors-limiting-building-activity",
+    "title": "11  Construction - Subsectors",
+    "section": "11.2 Main factors limiting building activity",
+    "text": "11.2 Main factors limiting building activity",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Construction - Subsectors</span>"
+    ]
+  }
+]
