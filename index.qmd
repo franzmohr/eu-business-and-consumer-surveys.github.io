@@ -1,0 +1,5 @@
+# Introduction {.unnumbered}
+
+This is a collection of graphs that are based on the monthly EU business and consumer surveys.
+
+All data is from https://economy-finance.ec.europa.eu/economic-forecast-and-surveys/business-and-consumer-surveys/download-business-and-consumer-survey-data/time-series_en

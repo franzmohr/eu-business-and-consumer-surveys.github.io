@@ -1,0 +1,197 @@
+# Main indicators
+
+## Sectoral confidence indicators
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+rm(list = ls())
+
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+
+
+# ******************************************************************************
+# From here on everything should work automatically
+
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(tidyr)
+library(zoo)
+
+# Download data ----
+
+# Source: https://economy-finance.ec.europa.eu/economic-forecast-and-surveys/business-and-consumer-surveys/download-business-and-consumer-survey-data/time-series_en
+
+tfile <- tempfile(tmpdir = tdir <- tempdir())
+
+# Try download for current month
+curr_date <- Sys.Date()
+curr_month <- month(curr_date)
+curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+curr_year <- substring(year(curr_date), 3, 4)
+curr_month <- paste0(curr_year, curr_month)
+try(download.file(paste0("https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_", curr_month, "/main_indicators_sa_nace2.zip"),
+                  destfile = tfile))
+sdmx_files <- unzip(tfile, exdir = tdir)
+
+# Download failed try it with download of one month earlier
+if (length(sdmx_files) == 0) {
+  curr_date <- floor_date(Sys.Date(), "month") - 1
+  curr_month <- month(curr_date)
+  curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+  curr_year <- substring(year(curr_date), 3, 4)
+  curr_month <- paste0(curr_year, curr_month)
+  try(download.file(paste0("https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_", curr_month, "/main_indicators_sa_nace2.zip"),
+                    destfile = tfile))
+  sdmx_files <- unzip(tfile, exdir = tdir)
+}
+
+# Prepare data ----
+
+temp_sdmx_files <- sdmx_files[which(grepl("main_indicators_nace2.xlsx", sdmx_files))]
+
+raw <- readxl::read_xlsx(temp_sdmx_files, sheet = "MONTHLY", na = "NA")
+
+names(raw)[1] <- "date"
+
+var_levels <- c("INDU", "SERV", "CONS", "RETA", "BUIL", "ESI", "EEI")
+var_labels <- c("Industry", "Service", "Consumer", "Retail", "Construction",
+                "Economic sentiment indicator", "Employment expectations indicator")
+
+temp <- raw %>%
+  pivot_longer(cols = -c("date")) %>%
+  filter(!is.na(value)) %>%
+  mutate(date = as.Date(date)) %>%
+  mutate(ctry = substring(name, 1, 2),
+         name = substring(name, 4, nchar(name))) %>%
+  select(date, ctry, name, value) %>%
+  filter(date >= min_date) %>%
+  filter(!name %in% c("ESI", "EEI")) %>%
+  mutate(name = factor(name, levels = var_levels, labels = var_labels))
+
+temp_ribbon <- temp %>%
+  group_by(date, name) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+ggplot(temp_ribbon, aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = temp_line, aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  facet_wrap(~ name, ncol = 3) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+
+```
+## Economic sentiment and employment expectations
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide', fig.height=3.5}
+rm(list = ls())
+
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+
+
+# ******************************************************************************
+# From here on everything should work automatically
+
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(tidyr)
+library(zoo)
+
+# Download data ----
+
+# Source: https://economy-finance.ec.europa.eu/economic-forecast-and-surveys/business-and-consumer-surveys/download-business-and-consumer-survey-data/time-series_en
+
+tfile <- tempfile(tmpdir = tdir <- tempdir())
+
+# Try download for current month
+curr_date <- Sys.Date()
+curr_month <- month(curr_date)
+curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+curr_year <- substring(year(curr_date), 3, 4)
+curr_month <- paste0(curr_year, curr_month)
+try(download.file(paste0("https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_", curr_month, "/main_indicators_sa_nace2.zip"),
+                  destfile = tfile))
+sdmx_files <- unzip(tfile, exdir = tdir)
+
+# Download failed try it with download of one month earlier
+if (length(sdmx_files) == 0) {
+  curr_date <- floor_date(Sys.Date(), "month") - 1
+  curr_month <- month(curr_date)
+  curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+  curr_year <- substring(year(curr_date), 3, 4)
+  curr_month <- paste0(curr_year, curr_month)
+  try(download.file(paste0("https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_", curr_month, "/main_indicators_sa_nace2.zip"),
+                    destfile = tfile))
+  sdmx_files <- unzip(tfile, exdir = tdir)
+}
+
+# Prepare data ----
+
+temp_sdmx_files <- sdmx_files[which(grepl("main_indicators_nace2.xlsx", sdmx_files))]
+
+raw <- readxl::read_xlsx(temp_sdmx_files, sheet = "MONTHLY", na = "NA")
+
+names(raw)[1] <- "date"
+
+var_levels <- c("ESI", "EEI")
+var_labels <- c("Economic sentiment indicator", "Employment expectations indicator")
+
+temp <- raw %>%
+  pivot_longer(cols = -c("date")) %>%
+  filter(!is.na(value)) %>%
+  mutate(date = as.Date(date)) %>%
+  mutate(ctry = substring(name, 1, 2),
+         name = substring(name, 4, nchar(name))) %>%
+  select(date, ctry, name, value) %>%
+  filter(date >= min_date) %>%
+  filter(name %in% c("ESI", "EEI")) %>%
+  mutate(name = factor(name, levels = var_levels, labels = var_labels))
+
+temp_ribbon <- temp %>%
+  group_by(date, name) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+ggplot(temp_ribbon, aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 100) +
+  geom_line(data = temp_line, aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  facet_wrap(~ name, ncol = 3) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+
+```

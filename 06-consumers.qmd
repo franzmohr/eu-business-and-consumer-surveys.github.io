@@ -1,0 +1,118 @@
+# Consumers
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+# Load packages
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(tidyr)
+library(zoo)
+
+# Download the data
+base_url <- "https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_"
+url_suffix <- "consumer_total_sa_nace2.zip"
+
+tfile <- tempfile(tmpdir = tdir <- tempdir())
+
+# Try download for current month
+curr_date <- Sys.Date()
+curr_month <- month(curr_date)
+curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+curr_year <- substring(year(curr_date), 3, 4)
+curr_month <- paste0(curr_year, curr_month)
+try(download.file(paste0(base_url, curr_month, "/", url_suffix), destfile = tfile))
+sdmx_files <- unzip(tfile, exdir = tdir)
+
+# Download failed try it with download of one month earlier
+if (length(sdmx_files) == 0) {
+  curr_date <- floor_date(Sys.Date(), "month") - 1
+  curr_month <- month(curr_date)
+  curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+  curr_year <- substring(year(curr_date), 3, 4)
+  curr_month <- paste0(curr_year, curr_month)
+  try(download.file(paste0(base_url, curr_month, "/", url_suffix), destfile = tfile))
+  sdmx_files <- unzip(tfile, exdir = tdir)
+}
+
+temp_sdmx_files <- sdmx_files[which(grepl("consumer_total_sa_nace2.xlsx", sdmx_files))]
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide', fig.height=16}
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+
+monthly <- readxl::read_xlsx(temp_sdmx_files, sheet = "CONSUMER MONTHLY", na = "NA")
+names(monthly)[1] <- "date"
+monthly <- monthly %>%
+  pivot_longer(cols = -c("date")) %>%
+  filter(!is.na(value)) 
+
+quarterly <- readxl::read_xlsx(temp_sdmx_files, sheet = "CONSUMER QUARTERLY", na = "NA")
+names(quarterly)[1] <- "date"
+quarterly <- quarterly %>%
+  pivot_longer(cols = -c("date")) %>%
+  filter(!is.na(value)) %>%
+  mutate(date = as.Date(as.yearqtr(date, "%Y-Q%q")))
+
+raw <- bind_rows(monthly, quarterly)
+
+var_levels <- c("COF", as.character(c(7, 1:6, 8:9, 11:12, 14:15)))
+var_labels <- c("Overall confidence",
+                "Unemployment expectations over next 12 months",
+                "Financial situation over last 12 months",
+                "Financial situation over next 12 months",
+                "General economic situation over last 12 months",
+                "General economic situation over next 12 months",
+                "Price trends over last 12 months",
+                "Price trends over next 12 months",
+                "Major purchases at present",
+                "Major purchases over next 12 months",
+                "Savings over next 12 months",
+                "Statement on financial situation of household",
+                "Purchase or build a home within the next 12 months",
+                "Home improvements over the next 12 months")
+
+temp <- raw %>%
+  mutate(date = as.Date(date),
+         name = gsub("CONS.", "", name),
+         name = gsub(".BS.M", "", name, fixed = TRUE),
+         name = gsub(".BS.Q", "", name, fixed = TRUE),
+         ctry = substring(name, 1, 2),
+         name = substring(name, 4, nchar(name)),
+         name = gsub("TOT.", "", name)) %>%
+  select(date, ctry, name, value) %>%
+  filter(date >= min_date,
+         name %in% var_levels) %>%
+  mutate(name = factor(name, levels = var_levels, labels = var_labels))
+
+temp_ribbon <- temp %>%
+  filter(!ctry %in% c("EA", "EU")) %>%
+  group_by(date, name) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+g <- ggplot(temp_ribbon, aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = temp_line, aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  facet_wrap(~ name, ncol = 2) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+
+g
+```

@@ -1,0 +1,249 @@
+# Services - Subsectors
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+# Load packages
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(tidyr)
+library(zoo)
+
+# Download the data
+base_url <- "https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_"
+url_suffix <- "services_subsectors_sa_nace2.zip"
+
+tfile <- tempfile(tmpdir = tdir <- tempdir())
+
+# Try download for current month
+curr_date <- Sys.Date()
+curr_month <- month(curr_date)
+curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+curr_year <- substring(year(curr_date), 3, 4)
+curr_month <- paste0(curr_year, curr_month)
+try(download.file(paste0(base_url, curr_month, "/", url_suffix), destfile = tfile))
+sdmx_files <- unzip(tfile, exdir = tdir)
+
+# Download failed try it with download of one month earlier
+if (length(sdmx_files) == 0) {
+  curr_date <- floor_date(Sys.Date(), "month") - 1
+  curr_month <- month(curr_date)
+  curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+  curr_year <- substring(year(curr_date), 3, 4)
+  curr_month <- paste0(curr_year, curr_month)
+  try(download.file(paste0(base_url, curr_month, "/", url_suffix), destfile = tfile))
+  sdmx_files <- unzip(tfile, exdir = tdir)
+}
+
+temp_sdmx_files_monthly <- sdmx_files[which(grepl("services_subsectors_sa_m_nace2.xlsx", sdmx_files))]
+temp_sdmx_files_quarterly <- sdmx_files[which(grepl("services_subsectors_sa_q_nace2.xlsx", sdmx_files))]
+```
+
+## Confidence indicators
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide', fig.height=8}
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+
+sheets <- excel_sheets(temp_sdmx_files_monthly)
+sheets <- sheets[!sheets %in% c("Index", "INFO")]
+
+raw <- NULL
+for (sheet_i in sheets) {
+  monthly <- readxl::read_xlsx(temp_sdmx_files_monthly, sheet = sheet_i, na = "NA")
+  names(monthly)[1] <- "date"
+  monthly <- monthly %>%
+    pivot_longer(cols = -c("date")) %>%
+    filter(!is.na(value)) %>%
+    mutate(sector = sheet_i)
+  raw <- bind_rows(raw, monthly)
+}
+
+# Monthly data
+var_levels <- c("COF", as.character(c(1, 2, 3, 5, 6)))
+var_labels <- c("Confidence Indicator",
+                "Business situation development over the past 3 months",
+                "Evolution of the demand over the past 3 months",
+                "Expectation of the demand over the next 3 months",
+                "Expectations of the employment over the next 3 months",
+                "Expectations of the prices over the next 3 months")
+
+temp <- raw  %>%
+  mutate(date = as.Date(date),
+         name = gsub("SERV.", "", name),
+         ctry = substring(name, 1, 2),
+         name = substring(name, 7, nchar(name)),
+         name = gsub(".BS.M", "", name, fixed = TRUE)) %>%
+  select(date, ctry, name, sector, value) %>%
+  filter(date >= min_date,
+         name %in% var_levels) %>%
+  mutate(name = factor(name, levels = var_levels, labels = var_labels))
+
+temp_ribbon <- temp %>%
+  filter(!ctry %in% c("EA", "EU")) %>%
+  group_by(date, name, sector) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+for (i in sheets) {
+  g <- ggplot(temp_ribbon %>% filter(sector == i), aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = temp_line %>% filter(sector == i), aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  facet_wrap(~name, ncol = 2) +
+  labs(title = paste0("Sector ", i)) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+  
+  print(g)
+}
+```
+
+## Factors limiting the business
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide', fig.height=8}
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+
+sheets <- excel_sheets(temp_sdmx_files_quarterly)
+sheets <- sheets[!sheets %in% c("Index", "INFO")]
+
+raw <- NULL
+for (sheet_i in sheets) {
+  monthly <- readxl::read_xlsx(temp_sdmx_files_quarterly, sheet = sheet_i, na = "NA")
+  names(monthly)[1] <- "date"
+  monthly <- monthly %>%
+    pivot_longer(cols = -c("date")) %>%
+    filter(!is.na(value)) %>%
+    mutate(sector = sheet_i)
+  raw <- bind_rows(raw, monthly)
+}
+
+# Monthly data
+var_levels <- c("F1S", "F2S", "F3S", "F4S", "F5S", "F6S")
+var_labels <- c("None", "Demand", "Labour forces",
+                "Equipment and/or Space", "Financial", "Other")
+
+temp <- raw  %>%
+  filter(grepl(".7.F", name, fixed = TRUE)) %>%
+  mutate(date = as.Date(as.yearqtr(date, "%Y-Q%q")),
+         name = gsub("SERV.", "", name),
+         name = gsub(".Q", "", name, fixed = TRUE),
+         ctry = substring(name, 1, 2),
+         name = substring(name, 9, nchar(name))) %>%
+  select(date, ctry, name, value, sector) %>%
+  filter(date >= min_date) %>%
+  mutate(name = factor(name, levels = var_levels, labels = var_labels))
+
+temp_ribbon <- temp %>%
+  filter(!ctry %in% c("EA", "EU")) %>%
+  group_by(date, name, sector) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+
+for (i in sheets) {
+  g <- ggplot(temp_ribbon %>% filter(sector == i), aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = temp_line %>% filter(sector == i), aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  facet_wrap(~name, ncol = 2) +
+  labs(title = paste0("Sector ", i)) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+  
+  print(g)
+}
+```
+
+## Current level of capacity utilization    
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide', fig.height=3.2, fig.width=3.5}
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+
+sheets <- excel_sheets(temp_sdmx_files_quarterly)
+sheets <- sheets[!sheets %in% c("Index", "INFO")]
+
+raw <- NULL
+for (sheet_i in sheets) {
+  monthly <- readxl::read_xlsx(temp_sdmx_files_quarterly, sheet = sheet_i, na = "NA")
+  names(monthly)[1] <- "date"
+  monthly <- monthly %>%
+    pivot_longer(cols = -c("date")) %>%
+    filter(!is.na(value)) %>%
+    mutate(sector = sheet_i)
+  raw <- bind_rows(raw, monthly)
+}
+
+temp <- raw  %>%
+  filter(grepl(".8.QPS", name, fixed = TRUE)) %>%
+  mutate(date = as.Date(as.yearqtr(date, "%Y-Q%q")),
+         name = gsub("SERV.", "", name),
+         name = gsub(".Q", "", name, fixed = TRUE),
+         ctry = substring(name, 1, 2),
+         name = substring(name, 9, nchar(name))) %>%
+  select(date, ctry, name, value, sector) %>%
+  filter(date >= min_date)
+
+temp_ribbon <- temp %>%
+  filter(!ctry %in% c("EA", "EU")) %>%
+  group_by(date, name, sector) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+
+for (i in sheets) {
+  g <- ggplot(temp_ribbon %>% filter(sector == i), aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = temp_line %>% filter(sector == i), aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  labs(title = paste0("Sector ", i)) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+  
+  print(g)
+}
+```

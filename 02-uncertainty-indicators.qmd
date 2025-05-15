@@ -1,0 +1,105 @@
+# Uncertainty indicators
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+# Country codes
+highlight_country <- c("AT", "EA", "DE")
+
+# Minimum data in plot
+min_date <- "2015-01-01"
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(readxl)
+library(tidyr)
+library(zoo)
+
+# Download the data
+base_url <- "https://ec.europa.eu/economy_finance/db_indicators/surveys/documents/series/nace2_ecfin_"
+url_suffix <- "uncertainty_total_nsa_nace2.zip"
+
+tfile <- tempfile(tmpdir = tdir <- tempdir())
+
+# Try download for current month
+curr_date <- Sys.Date()
+curr_month <- month(curr_date)
+curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+curr_year <- substring(year(curr_date), 3, 4)
+curr_month <- paste0(curr_year, curr_month)
+try(download.file(paste0(base_url, curr_month, "/", url_suffix), destfile = tfile))
+sdmx_files <- unzip(tfile, exdir = tdir)
+
+# Download failed try it with download of one month earlier
+if (length(sdmx_files) == 0) {
+  curr_date <- floor_date(Sys.Date(), "month") - 1
+  curr_month <- month(curr_date)
+  curr_month <- ifelse(nchar(curr_month) == 1, paste0("0", curr_month), curr_month)
+  curr_year <- substring(year(curr_date), 3, 4)
+  curr_month <- paste0(curr_year, curr_month)
+  try(download.file(paste0(base_url, curr_month, "/", url_suffix), destfile = tfile))
+  sdmx_files <- unzip(tfile, exdir = tdir)
+}
+
+temp_sdmx_files <- sdmx_files[which(grepl("surveys_uncertainty_nsa_nace2.xlsx", sdmx_files))]
+```
+
+## Aggregate
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+
+sectors <- c("AGGREGATE", "BUILDING", "CONSUMER", "INDUSTRY", "RETAIL", "SERVICES")
+sector_labels <- c("Overall", "Construction", "Consumer", "Industry", "Retail", "Services")
+
+raw <- NULL
+for (i in sectors) {
+  temp <- readxl::read_xlsx(temp_sdmx_files, sheet = i, na = "NA")
+  names(temp)[1] <- "date"
+  temp <- temp %>%
+    pivot_longer(cols = -c("date")) %>%
+    filter(!is.na(value)) %>%
+    mutate(date = as.Date(date),
+           ctry = case_when(i == "AGGREGATE" ~ substring(name, 1, 2),
+                            TRUE ~ substring(name, 6, 7)),
+           name = i) %>%
+    select(date, ctry, name, value) %>%
+    filter(date >= min_date)
+  raw <- bind_rows(raw, temp)
+  rm(temp)
+}
+
+temp <- raw %>%
+  mutate(name = factor(name, levels = sectors, labels = sector_labels),
+         hl_ctry = ifelse(ctry %in% highlight_country, ctry, "Other"),
+         hl_ctry = factor(hl_ctry, levels = c(highlight_country, "Other")))
+
+temp_ribbon <- temp %>%
+  filter(!ctry %in% c("EA", "EU")) %>%
+  group_by(date, name) %>%
+  summarise(ymin = quantile(value, .1),
+            ymax = quantile(value, .9),
+            nobs = n(),
+            .groups = "drop")
+
+temp_line <- temp %>%
+  filter(ctry %in% highlight_country)
+
+ggplot(temp_ribbon, aes(x = date)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), alpha = .4) +
+  geom_hline(yintercept = 0) +
+  geom_line(data = temp_line, aes(y = value, colour = ctry)) +
+  scale_x_date(expand = c(.01, 0), date_labels = "%Y", date_breaks = "1 year") +
+  facet_wrap(~ name, ncol = 3) +
+  theme(strip.text = element_text(size = 6),
+        axis.text = element_text(size = 6),
+        plot.title = element_text(size = 10),
+        plot.subtitle = element_text(size = 8),
+        plot.caption = element_text(size = 6),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.title = element_blank())
+
+```
+
+

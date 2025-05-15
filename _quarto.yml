@@ -1,0 +1,29 @@
+project:
+  type: book
+
+book:
+  title: "EC Business and Consumer Surveys"
+  author: "Franz X. Mohr"
+  date: today
+  chapters:
+    - index.qmd
+    - 01-main-indicators.qmd
+    - 02-uncertainty-indicators.qmd
+    - 03-labour-hoarding.qmd
+    - 04-industry.qmd
+    - 04-01-industry-subsectors.qmd
+    - 05-services.qmd
+    - 05-01-services-subsectors.qmd
+    - 06-consumers.qmd
+    - 07-retail.qmd
+    - 08-00-building.qmd
+    - 08-01-building-subsectors.qmd
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+
+
